@@ -72,6 +72,10 @@ body {
 }
 /* --- /RESET --- */
 
+.hide {
+	display: none;
+}
+
 
 .player[data-player="banque"] {
 	background-color: rgb(111, 111, 179);
@@ -83,8 +87,21 @@ body {
 	padding: 60px;
 }
 
-.draw {
+.draw,
+.stop {
 	width: fit-content;
 	padding: 6px 12px;
 	background-color: white;
+	cursor: pointer;
 }
+
+.container {
+	display: flex;
+	align-items: center;
+	gap: 32px;
+}
+
+.score {
+	color: white;
+	font-size: 22px;
+} 

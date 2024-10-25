@@ -16,31 +16,67 @@ window.addEventListener('load', function(){
         sixDecks = sixDecks.concat(deck);
     }
 
-    const btns = document.querySelectorAll(".draw");
-    btns.forEach(btn => {
-        btn.addEventListener("click", drawCard);
+    const drawBtns = document.querySelectorAll(".draw");
+    drawBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const player = btn.closest('.player');
+            drawCard(player.dataset.player);
+        });
     })
 
+    const stopBtns = document.querySelectorAll(".stop")
+    stopBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const player = btn.closest('.player');
+            stop(player.dataset.player);
+        });
+    })
 
+    let gameOver = false;
 
-    function drawCard() {
-        const btn = this;
-        const player = btn.closest('.player');
-
+    function drawCard(player) {
         const randomCardIndex = Math.floor(Math.random() * sixDecks.length);
         const cardDraw = sixDecks[randomCardIndex];
         sixDecks.splice(randomCardIndex, 1);
 
         const p = document.createElement("p");
-        const cards = document.querySelector(`[data-player="${player.dataset.player}"] .cards`);
+        const cards = document.querySelector(`[data-player="${player}"] .cards`);
         p.innerHTML = cardDraw;
         cards.appendChild(p);
 
-        updatePlayerScore(player.dataset.player, cardDraw);
+        updatePlayerScore(player, cardDraw);
+
+        if (
+            player !== 'banque' &&
+            Scores['banque'] < 17
+        ) {
+            drawCard('banque');
+        }
     }
     
     function updatePlayerScore(player, cardDraw) {
-        const playerScore = Scores[player];
         const cardValue = cardDraw.split("")[0];
+        Scores[player] += parseInt(cardValue) ? parseInt(cardValue) : 10;
+
+        const playerScore = document.querySelector(`[data-player="${player}"] .score`);
+        playerScore.innerHTML = Scores[player];
+
+        isGameOver(Scores[player]);
+        if(gameOver) console.log('PERDU', player);
+    }
+
+    function isGameOver(playerScore) {
+        gameOver = playerScore > 21;
+    }
+
+    function stop(player) {
+        const drawBtnOfPlayer = document.querySelector(`[data-player="${player}"] .draw`)
+        drawBtnOfPlayer.classList.add("hide");
+
+        while (Scores['banque'] < 17) {
+            drawCard('banque');
+        }
+
+        if(!gameOver) console.log('BANQUE GAGNE');
     }
 })
