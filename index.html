@@ -12,28 +12,58 @@
     <script defer type="text/javascript" src="./script.js"></script>
 </head>
 <body>
+    <div class="container">
 
-    <div class="player" data-player="banque">
-        <div class="container">
-            <p class="draw hide">
-                Tirer une carte
-            </p>
-            <p class="score">0</p>
-        </div>
-        <div class="cards"></div>
-    </div>
-
-    <div class="player" data-player="player1">
-        <div class="container">
-            <p class="draw">
-                Tirer une carte
-            </p>
-            <p class="stop">Stop</p>
-            <p class="score">0</p>
-        </div>
-        <div class="cards"></div>
-    </div>
+        <div class="player" data-player="banque">
+            <div class="player__content">
+                <p class="title">Banque : <span class="score">0</span></p>
     
+                <p class="draw hide">
+                    Tirer une carte
+                </p>
+            </div>
+            <div class="cards"></div>
+        </div>
+    
+        <ul class="container-list">
+            <li class="container-list__ele">
+                <div class="player" data-player="player1">
+                    <div class="player__content">
+                        <p class="title">Joueur 1 : <span class="score">0</span></p>
+            
+                        <div class="btns">
+                            <button class="draw button-82-pushable" role="button">
+                                <span class="button-82-shadow"></span>
+                                <span class="button-82-edge"></span>
+                                <span class="button-82-front text">
+                                    Tirer une carte
+                                </span>
+                            </button>
+                
+                            <button class="stop button-82-pushable" role="button">
+                                <span class="button-82-shadow"></span>
+                                <span class="button-82-edge"></span>
+                                <span class="button-82-front text">
+                                    Stop
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="cards"></div>
+                </div>
+            </li>
+            <!-- <li class="container-list__ele">
+                <div class="player" data-player="player2">
+                    <div class="player__content">
+                        <p class="title">Joueur 2 : <span class="score">0</span></p>
+                        
+                        <p class="score">0</p>
+                    </div>
+                    <div class="cards"></div>
+                </div>
+            </li> -->
+        </ul>
+    </div>
 </body>
 </html>
 

@@ -1,5 +1,4 @@
 window.addEventListener('load', function(){
-
     const deck = [
         '1H', '2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H','TH', 'JH', 'QH', 'KH',
         '1D', '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D','TD', 'JD', 'QD', 'KD',
@@ -33,25 +32,29 @@ window.addEventListener('load', function(){
     })
 
     let gameOver = false;
+    
+    init();
 
     function drawCard(player) {
         const randomCardIndex = Math.floor(Math.random() * sixDecks.length);
         const cardDraw = sixDecks[randomCardIndex];
         sixDecks.splice(randomCardIndex, 1);
 
-        const p = document.createElement("p");
+        const img = document.createElement("img");
         const cards = document.querySelector(`[data-player="${player}"] .cards`);
-        p.innerHTML = cardDraw;
-        cards.appendChild(p);
+        img.classList.add('card__img');
+        img.src = `./Cards/${cardDraw}.png`;
+        cards.appendChild(img);
 
         updatePlayerScore(player, cardDraw);
 
-        if (
-            player !== 'banque' &&
-            Scores['banque'] < 17
-        ) {
-            drawCard('banque');
-        }
+        // TEST
+        // if (
+        //     player !== 'banque' &&
+        //     Scores['banque'] < 17
+        // ) {
+        //     drawCard('banque');
+        // }
     }
     
     function updatePlayerScore(player, cardDraw) {
@@ -78,5 +81,21 @@ window.addEventListener('load', function(){
         }
 
         if(!gameOver) console.log('BANQUE GAGNE');
+    }
+    
+    function init(){
+        const players = document.querySelectorAll(".player");
+        players.forEach(player => {
+            const role = player.dataset.player;
+            drawCard(role);
+            drawCard(role);
+            
+            if(role === 'banque'){
+                const cardCached = document.querySelector(".cards .card__img:nth-child(2)");
+                cardCached.classList.add('card__img--hide');
+                cardCached.dataset.src = cardCached.src;
+                cardCached.src = './Cards/cardBack_green5.png';
+            }
+        });
     }
 })
