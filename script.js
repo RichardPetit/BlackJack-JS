@@ -8,7 +8,9 @@ window.addEventListener('load', function(){
     const nbDecks = 6;
     const Scores = {
         'banque' : 0,
-        'player1': 0
+        'player1': 0,
+        'player2': 0,
+        'player3': 0,
     }
     let sixDecks = [];
     for( let i = 0; i < nbDecks; i ++) {
@@ -20,6 +22,7 @@ window.addEventListener('load', function(){
         btn.addEventListener("click", () => {
             const player = btn.closest('.player');
             drawCard(player.dataset.player);
+            nextPlayer(player.dataset.player);
         });
     })
 
@@ -28,6 +31,7 @@ window.addEventListener('load', function(){
         btn.addEventListener("click", () => {
             const player = btn.closest('.player');
             stop(player.dataset.player);
+            nextPlayer(player.dataset.player);
         });
     })
 
@@ -36,30 +40,44 @@ window.addEventListener('load', function(){
     init();
 
     function drawCard(player) {
+        const cards = document.querySelector(`[data-player="${player}"] .cards`);
+        const nbPlayerCards = cards.querySelectorAll('.card__img').length;
+
+        if(player === 'banque' && nbPlayerCards === 2) {
+            const secondCard = cards.querySelector('.card__img--hide');
+            const srcImg = secondCard.dataset.src;
+            secondCard.src = srcImg;
+            secondCard.classList.remove('card__img--hide');
+
+            updatePlayerScore('banque');
+            if (Scores['banque'] >= 17) return;
+        }
+
         const randomCardIndex = Math.floor(Math.random() * sixDecks.length);
         const cardDraw = sixDecks[randomCardIndex];
         sixDecks.splice(randomCardIndex, 1);
 
         const img = document.createElement("img");
-        const cards = document.querySelector(`[data-player="${player}"] .cards`);
         img.classList.add('card__img');
         img.src = `./Cards/${cardDraw}.png`;
+        img.dataset.value = cardDraw;
         cards.appendChild(img);
 
-        updatePlayerScore(player, cardDraw);
+        updatePlayerScore(player);
 
-        // TEST
-        // if (
-        //     player !== 'banque' &&
-        //     Scores['banque'] < 17
-        // ) {
-        //     drawCard('banque');
-        // }
+        if(player === 'banque') nextPlayer('banque');
     }
     
-    function updatePlayerScore(player, cardDraw) {
-        const cardValue = cardDraw.split("")[0];
-        Scores[player] += parseInt(cardValue) ? parseInt(cardValue) : 10;
+    function updatePlayerScore(player) {
+        const playerCards = document.querySelectorAll(`[data-player="${player}"] .card__img:not(.card__img--hide)`);
+
+        let currentScore = 0;
+        playerCards.forEach(card => {
+            const cardValue = card.dataset.value.split("")[0];
+            currentScore += parseInt(cardValue) ? parseInt(cardValue) : 10;
+        })
+
+        Scores[player] = currentScore;
 
         const playerScore = document.querySelector(`[data-player="${player}"] .score`);
         playerScore.innerHTML = Scores[player];
@@ -72,24 +90,36 @@ window.addEventListener('load', function(){
         gameOver = playerScore > 21;
     }
 
+
+    let nbPlayerStoped = 0;
+
     function stop(player) {
-        const drawBtnOfPlayer = document.querySelector(`[data-player="${player}"] .draw`)
+        nbPlayerStoped += 1;
+        const currentPlayer = document.querySelector(`[data-player="${player}"]`);
+        currentPlayer.classList.add('player--stop');
+        const drawBtnOfPlayer = currentPlayer.querySelector('.draw');
         drawBtnOfPlayer.classList.add("hide");
+        const stopBtnOfPlayer = currentPlayer.querySelector('.stop');
+        stopBtnOfPlayer.classList.add("hide");
 
-        while (Scores['banque'] < 17) {
-            drawCard('banque');
+        const allPlayers = document.querySelectorAll('.player:not([data-player="banque"])');
+        if (allPlayers.length === nbPlayerStoped) {            
+            while (Scores['banque'] < 17) {
+                drawCard('banque');
+            }
+    
+            if(!gameOver) console.log('BANQUE GAGNE');
         }
-
-        if(!gameOver) console.log('BANQUE GAGNE');
     }
     
     function init(){
         const players = document.querySelectorAll(".player");
         players.forEach(player => {
             const role = player.dataset.player;
-            drawCard(role);
-            drawCard(role);
             
+            drawCard(role);
+            drawCard(role);
+
             if(role === 'banque'){
                 const cardCached = document.querySelector(".cards .card__img:nth-child(2)");
                 cardCached.classList.add('card__img--hide');
@@ -97,5 +127,21 @@ window.addEventListener('load', function(){
                 cardCached.src = './Cards/cardBack_green5.png';
             }
         });
+    }
+
+    function nextPlayer(player) {
+        const currentPlayer = document.querySelector(`[data-player="${player}"]`);
+        currentPlayer.classList.remove('playing');
+        const nextPlayer = document.querySelector(`[data-player="${currentPlayer.dataset.next}"]`);
+
+        nextPlayer.classList.add('playing');
+
+        if (nextPlayer.dataset.player === 'banque') {
+            if (Scores['banque'] < 17) {
+                drawCard('banque');
+            } else {
+                nextPlayer(nextPlayer.dataset.next);
+            }
+        }
     }
 })

@@ -274,3 +274,12 @@ body {
 .button-82-pushable:focus:not(:focus-visible) {
   outline: none;
 }
+
+.draw, .stop {
+  display: none;
+}
+
+.playing .draw,
+.playing .stop {
+  display: block;
+}
