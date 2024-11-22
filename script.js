@@ -17,6 +17,9 @@ window.addEventListener('load', function(){
         sixDecks = sixDecks.concat(deck);
     }
 
+    let nbPlayerStoped = 0;
+    const nbPlayers = Object.keys(Scores).length;
+
     const drawBtns = document.querySelectorAll(".draw");
     drawBtns.forEach(btn => {
         btn.addEventListener("click", () => {
@@ -43,12 +46,12 @@ window.addEventListener('load', function(){
         const cards = document.querySelector(`[data-player="${player}"] .cards`);
         const nbPlayerCards = cards.querySelectorAll('.card__img').length;
 
+        // Pour la 3e carte de la banque
         if(player === 'banque' && nbPlayerCards === 2) {
             const secondCard = cards.querySelector('.card__img--hide');
             const srcImg = secondCard.dataset.src;
             secondCard.src = srcImg;
             secondCard.classList.remove('card__img--hide');
-
             updatePlayerScore('banque');
             if (Scores['banque'] >= 17) return;
         }
@@ -62,6 +65,14 @@ window.addEventListener('load', function(){
         img.src = `./Cards/${cardDraw}.png`;
         img.dataset.value = cardDraw;
         cards.appendChild(img);
+
+        // Pour la 2e carte de la banque
+        if (player === 'banque' && (nbPlayerCards === 1)) {
+            const cardCached = document.querySelector(".cards .card__img:nth-child(2)");
+            cardCached.classList.add('card__img--hide');
+            cardCached.dataset.src = cardCached.src;
+            cardCached.src = './Cards/cardBack_green5.png';
+        }
 
         updatePlayerScore(player);
 
@@ -90,9 +101,6 @@ window.addEventListener('load', function(){
         gameOver = playerScore > 21;
     }
 
-
-    let nbPlayerStoped = 0;
-
     function stop(player) {
         nbPlayerStoped += 1;
         const currentPlayer = document.querySelector(`[data-player="${player}"]`);
@@ -119,29 +127,62 @@ window.addEventListener('load', function(){
             
             drawCard(role);
             drawCard(role);
-
-            if(role === 'banque'){
-                const cardCached = document.querySelector(".cards .card__img:nth-child(2)");
-                cardCached.classList.add('card__img--hide');
-                cardCached.dataset.src = cardCached.src;
-                cardCached.src = './Cards/cardBack_green5.png';
-            }
         });
     }
 
     function nextPlayer(player) {
         const currentPlayer = document.querySelector(`[data-player="${player}"]`);
         currentPlayer.classList.remove('playing');
-        const nextPlayer = document.querySelector(`[data-player="${currentPlayer.dataset.next}"]`);
+        const nextPlayerNode = document.querySelector(`[data-player="${currentPlayer.dataset.next}"]`);
 
-        nextPlayer.classList.add('playing');
+        nextPlayerNode.classList.add('playing');
 
-        if (nextPlayer.dataset.player === 'banque') {
+        if (nextPlayerNode.dataset.player === 'banque') {
             if (Scores['banque'] < 17) {
                 drawCard('banque');
             } else {
-                nextPlayer(nextPlayer.dataset.next);
+                // boucle infini
+                // on passe 2* ici, du coup ça incrémente de 2 nbPlayerStoped
+                
+                nextPlayerNode.classList.add('player--stop');
+                nbPlayerStoped += 1;
+                nextPlayer(nextPlayerNode.dataset.next);
+            }
+        }
+
+        console.log(nbPlayerStoped, '/', nbPlayers);
+
+        if (nbPlayerStoped >= nbPlayers) {
+            // fin du jeu
+            end();
+        } else if ((nextPlayerNode.classList.contains('player--stop'))) {
+            nextPlayer(nextPlayerNode.dataset.player);
+        }
+    }
+
+    function end() {
+        const scoreBanque = Scores["banque"];
+        for (const [player, playerScore] of Object.entries(Scores)) {
+            if (player !== 'banque') {
+                const playerNode = document.querySelector(`.player[data-player='${player}']`);
+
+                if (playerScore <= 21 && (playerScore > scoreBanque || scoreBanque > 21)) {
+                    playerNode.classList.add('player--win');
+                } else {
+                    playerNode.classList.add('player--lose');
+                }
             }
         }
     }
+
+
+
 })
+
+/*
+    ajouter la classe 'player--stop' si on dépasse 21
+    ajouter dynamiquement depuis l'UI le nombre de joueur
+    gérer le cas de l'AS
+    gérer les mises
+    gérer les splits
+*/

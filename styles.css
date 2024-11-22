@@ -87,6 +87,10 @@ body {
 	padding: 60px;
 } */
 
+.player {
+  position: relative;
+}
+
 .player__content {
 	display: flex;
 	flex-direction: column;
@@ -282,4 +286,35 @@ body {
 .playing .draw,
 .playing .stop {
   display: block;
+}
+
+.player--stop .draw,
+.player--stop .stop {
+  display: none;
+}
+
+
+.player--win::before,
+.player--lose::before {
+  content: '';
+  width: calc(100% + 32px);
+  height: calc(100% + 32px);
+  border-radius: 8px;
+  background-color: rgb(80, 168, 40);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  z-index: 2;
+  opacity: .5;
+}
+
+.player--lose::before {
+  background-color: rgb(189, 47, 47);
+}
+
+.player--stop .title {
+  color: rgb(189, 47, 47);
 }
