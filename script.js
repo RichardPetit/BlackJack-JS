@@ -80,17 +80,40 @@ window.addEventListener('load', function(){
     }
     
     function updatePlayerScore(player) {
-        const playerCards = document.querySelectorAll(`[data-player="${player}"] .card__img:not(.card__img--hide)`);
+        const playerNode = document.querySelector(`[data-player="${player}"]`);
+        const playerCards = playerNode.querySelectorAll('.card__img:not(.card__img--hide)');
 
         let currentScore = 0;
         playerCards.forEach(card => {
             const cardValue = card.dataset.value.split("")[0];
-            currentScore += parseInt(cardValue) ? parseInt(cardValue) : 10;
+
+            if (
+                parseInt(cardValue) === 1 &&
+                !card.dataset.as &&
+                player !== 'banque'
+            ) {
+                const popupAs = document.querySelector('.popup--as');
+                popupAs.classList.remove('hide');
+                playerNode.classList.add('player--waiting');
+
+                return;
+            } else {
+                let cv;
+
+                if (parseInt(cardValue) === 1) cv = parseInt(card.dataset.as);
+                else cv = parseInt(cardValue) ? parseInt(cardValue) : 10
+
+                currentScore += cv;
+            }
         })
 
         Scores[player] = currentScore;
 
-        const playerScore = document.querySelector(`[data-player="${player}"] .score`);
+        if (Scores[player] >= 21) {
+            playerNode.classList.add('player--stop');
+        }
+
+        const playerScore = playerNode.querySelector('.score');
         playerScore.innerHTML = Scores[player];
 
         isGameOver(Scores[player]);
@@ -122,16 +145,18 @@ window.addEventListener('load', function(){
     
     function init(){
         const players = document.querySelectorAll(".player");
-        players.forEach(player => {
-            const role = player.dataset.player;
+        // players.forEach(player => {
+        //     const role = player.dataset.player;
             
-            drawCard(role);
-            drawCard(role);
-        });
+        //     drawCard(role);
+        //     drawCard(role);
+        // });
     }
 
     function nextPlayer(player) {
         const currentPlayer = document.querySelector(`[data-player="${player}"]`);
+        if (currentPlayer.classList.contains('player--waiting')) return;
+
         currentPlayer.classList.remove('playing');
         const nextPlayerNode = document.querySelector(`[data-player="${currentPlayer.dataset.next}"]`);
 
@@ -143,6 +168,8 @@ window.addEventListener('load', function(){
             } else {
                 // boucle infini
                 // on passe 2* ici, du coup ça incrémente de 2 nbPlayerStoped
+                console.log('nbPlayerStoped :', nbPlayerStoped);
+                
                 
                 nextPlayerNode.classList.add('player--stop');
                 nbPlayerStoped += 1;
@@ -162,6 +189,7 @@ window.addEventListener('load', function(){
 
     function end() {
         const scoreBanque = Scores["banque"];
+        
         for (const [player, playerScore] of Object.entries(Scores)) {
             if (player !== 'banque') {
                 const playerNode = document.querySelector(`.player[data-player='${player}']`);
@@ -175,14 +203,30 @@ window.addEventListener('load', function(){
         }
     }
 
+    const popupAs = document.querySelector('.popup--as');
+    const btnAsValide = popupAs.querySelector('.popup__confirm');
+    btnAsValide.addEventListener('click', () => {
+        const currentPlayer = document.querySelector('.player.playing');
+        const valueSelected = popupAs.querySelector('.popup__input:checked').value;
+        const lastCard = currentPlayer.querySelector('.cards .card__img:last-child');
+        lastCard.dataset.as = valueSelected;
 
+        // Masquer la popup
+        popupAs.classList.add('hide');
 
+        currentPlayer.classList.remove('player--waiting');
+
+        updatePlayerScore(currentPlayer.dataset.player);
+        nextPlayer(currentPlayer.dataset.player);
+    })
 })
 
 /*
-    ajouter la classe 'player--stop' si on dépasse 21
+    // ajouter la classe 'player--stop' si on dépasse 21
     ajouter dynamiquement depuis l'UI le nombre de joueur
-    gérer le cas de l'AS
+    gérer le cas de l'AS :
+        // - pour les joueurs
+        - pour la banque (valeur as auto)
     gérer les mises
     gérer les splits
 */
